@@ -29,6 +29,23 @@ class UrlCleanerTests(unittest.TestCase):
         self.assertTrue(is_facebook_url("https://fb.watch/abc123"))
         self.assertFalse(is_facebook_url("https://youtube.com/watch?v=1"))
 
+    def test_marketplace_tracking_params_removed(self) -> None:
+        cleaned = clean_facebook_url(
+            "https://www.facebook.com/marketplace/item/1262773558658137/"
+            "?ref=product_details&referral_code=marketplace_general"
+            "&referral_story_type=general_listing&tracking=%7Babc%7D"
+        )
+        self.assertEqual(
+            cleaned,
+            "https://www.facebook.com/marketplace/item/1262773558658137/",
+        )
+
+    def test_common_ref_params_removed_globally(self) -> None:
+        cleaned = clean_facebook_url(
+            "https://www.facebook.com/share/p/abc123/?ref=share&refsrc=deprecated&id=1"
+        )
+        self.assertEqual(cleaned, "https://www.facebook.com/share/p/abc123/?id=1")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -21,6 +21,15 @@ JUNK_QUERY_PARAMS = {
     "paipv",
     "__cft__",
     "__tn__",
+    "ref",
+    "refsrc",
+    "referral_code",
+    "referral_story_type",
+    "tracking",
+    "acontext",
+    "notif_id",
+    "notif_t",
+    "locale",
 }
 
 
@@ -51,17 +60,20 @@ def _canonical_host(host: str) -> str:
 def clean_facebook_url(url: str) -> str:
     parsed = urlparse(url)
     host = _canonical_host(parsed.netloc)
+    path = parsed.path or "/"
+
+    # Marketplace item links are fully identified by item id in the path.
+    # Query params are almost always referral/tracking noise.
+    strip_all_query = path.startswith("/marketplace/item/")
 
     kept_params = []
-    for key, value in parse_qsl(parsed.query, keep_blank_values=True):
-        if key.lower() in JUNK_QUERY_PARAMS:
-            continue
-        kept_params.append((key, value))
+    if not strip_all_query:
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True):
+            if key.lower() in JUNK_QUERY_PARAMS:
+                continue
+            kept_params.append((key, value))
 
     query = urlencode(kept_params, doseq=True)
-
-    # Keep path as-is but normalize empty path to "/".
-    path = parsed.path or "/"
 
     cleaned = parsed._replace(
         scheme="https",

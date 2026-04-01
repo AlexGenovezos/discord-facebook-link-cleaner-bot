@@ -9,8 +9,13 @@ from .url_cleaner import clean_facebook_url, first_facebook_url
 
 
 def create_client(config: Config, logger: logging.Logger) -> discord.Client:
+    """Build and return a configured Discord client.
+
+    The client listens for messages in the configured channel and reposts
+    any Facebook links it finds in cleaned form.
+    """
     intents = discord.Intents.default()
-    intents.message_content = True
+    intents.message_content = True  # Required to read message text
 
     client = discord.Client(intents=intents)
 
@@ -26,12 +31,15 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
     @client.event
     async def on_message(message: discord.Message) -> None:
         try:
+            # Ignore messages from bots and webhooks to avoid feedback loops.
             if message.author.bot:
                 logger.debug("Ignoring bot message id=%s", message.id)
                 return
             if message.webhook_id is not None:
                 logger.debug("Ignoring webhook message id=%s", message.id)
                 return
+
+            # Only process messages in the configured target channel.
             if message.channel.id != config.target_channel_id:
                 logger.debug(
                     "Ignoring message id=%s in channel_id=%s (target=%s)",
@@ -48,23 +56,25 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
                 len(message.content or ""),
             )
 
+            # Look for the first Facebook URL in the message.
             found = first_facebook_url(message.content)
             if not found:
                 logger.debug("No Facebook URL found in message id=%s", message.id)
                 return
 
+            # Clean the URL and resolve a human-readable title for it.
             cleaned = clean_facebook_url(found)
-            title = fetch_title(cleaned, config.request_timeout, config.user_agent) or "Facebook Link"
+            title = await fetch_title(cleaned, config.request_timeout, config.user_agent) or "Facebook Link"
             payload = format_clean_post(title, cleaned, message.author.mention)
 
-            try:
-                await message.channel.send(payload, suppress_embeds=True)
-            except TypeError:
-                # Older discord.py paths may not support suppress_embeds.
-                await message.channel.send(payload)
+            # suppress_embeds prevents Discord from generating a link preview,
+            # since our formatted message already contains the title.
+            await message.channel.send(payload, suppress_embeds=True)
 
             logger.info("Processed Facebook link: %s -> %s", found, cleaned)
 
+            # Optionally remove the original message so the channel only shows
+            # the cleaned repost. Requires Manage Messages permission.
             if config.delete_original:
                 try:
                     await message.delete()

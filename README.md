@@ -25,7 +25,7 @@ Shared by @username
 - Resolves page title via OpenGraph metadata
 - Optionally deletes the original message
 - Ignores bots and webhooks
-- Replies to `!version` (or `version`/`bot version`) in the target channel with the current build version so you always know what release you're running; the version uses `0.1.0` plus the build date (default `YYYY.MM.DD`, overridable with the `BUILD_DATE` env var) so every build reflects when it was created.
+- Replies to `!version` (or `version`/`bot version`) in the target channel with the current build version so you always know what release you're running; the version uses `0.1.0` plus the build date (default `YYYY.MM.DD`, overridable with the `BUILD_DATE` env var) and appends a sequence (`BUILD_SEQUENCE`, CI run number, or a UTC timestamp) so you can tell build one, two, or 100 of the same calendar day.
 
 ---
 

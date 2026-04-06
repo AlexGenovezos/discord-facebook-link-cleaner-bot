@@ -4,3 +4,4 @@ __pycache__/
 .env
 .pytest_cache/
 .vscode/
+discord_facebook_link_cleaner_plan.md

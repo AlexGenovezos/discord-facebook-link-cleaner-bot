@@ -18,6 +18,33 @@ VERSION_COMMANDS = frozenset(
 )
 
 
+
+async def _notify_processing_failure(
+    channel: discord.abc.Messageable,
+    author: discord.abc.User,
+    error: Exception,
+    logger: logging.Logger,
+) -> None:
+    """Notify the channel that a Facebook link could not be cleaned."""
+
+    mention = getattr(author, "mention", "the user")
+    error_text = str(error) or error.__class__.__name__
+    if len(error_text) > 160:
+        error_text = f"{error_text[:157]}..."
+
+    try:
+        await channel.send(
+            "⚠️ Unable to clean the Facebook link posted by "
+            f"{mention}. The issue was logged ({error_text})."
+        )
+    except Exception as send_error:
+        logger.warning(
+            "Failed to notify channel after cleaning error (%s); original error=%s",
+            send_error,
+            error,
+        )
+
+
 def _is_version_request(content: str) -> bool:
     """Return True if the message explicitly asks for the bot version."""
     return content.strip().lower() in VERSION_COMMANDS
@@ -105,5 +132,6 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
                     logger.warning("Failed to delete original message %s: %s", message.id, delete_error)
         except Exception as error:
             logger.exception("Unexpected failure while processing message %s: %s", message.id, error)
+            await _notify_processing_failure(message.channel, message.author, error, logger)
 
     return client

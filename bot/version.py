@@ -7,7 +7,7 @@ import os
 from typing import Final
 
 
-BASE_VERSION: Final[str] = "0.1.0"
+BASE_VERSION: Final[str] = ""
 DATE_FORMAT: Final[str] = "%Y.%m.%d"
 SEQUENCE_ENV_VARS: Final[tuple[str, ...]] = (
     "BUILD_SEQUENCE",
@@ -48,10 +48,11 @@ def _timestamp_sequence() -> str:
 
 
 def _build_version() -> str:
-    """Return BASE_VERSION plus the date plus optional build sequence suffix."""
+    """Return date plus optional build sequence suffix."""
     date_part = _build_date()
     sequence = _sequence_from_env() or _timestamp_sequence()
-    return f"{BASE_VERSION}+{date_part}-{sequence}"
+    base = f"{BASE_VERSION}+" if BASE_VERSION else ""
+    return f"{base}{date_part}-{sequence}"
 
 
 VERSION: Final[str] = _build_version()

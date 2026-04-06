@@ -25,7 +25,8 @@ Shared by @username
 - Resolves page title via OpenGraph metadata
 - Optionally deletes the original message
 - Ignores bots and webhooks
-- Replies to `!version` (or `version`/`bot version`) in the target channel with the current build version so you always know what release you're running.
+- Replies to `!version` (or `version`/`bot version`) in the target channel with the current build version so you always know what release you're running; the version uses `0.1.0` plus the git commit count (`git rev-list --count HEAD`), and it falls back to plain `0.1.0` if git metadata is missing (e.g., in release containers).
+  - The version string is based on `0.1.0` plus the number of commits in the repository (`git rev-list --count HEAD`), so every new commit bumps what the bot reports. If git metadata is unavailable (e.g., in a release image) it falls back to plain `0.1.0`.
 
 ---
 

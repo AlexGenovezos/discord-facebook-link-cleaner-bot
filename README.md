@@ -102,3 +102,13 @@ python main.py
 | `REQUEST_TIMEOUT` | No | `10` | Seconds to wait when fetching a page title |
 | `USER_AGENT` | No | `Mozilla/5.0 (compatible; DiscordLinkCleaner/1.0)` | HTTP User-Agent for title fetching |
 | `LOG_LEVEL` | No | `INFO` | Log verbosity: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+
+## Dependency lockfile
+
+Use `requirements.lock` for deterministic deployments and audits:
+
+```bash
+pip install -r requirements.lock
+```
+
+After bumping `requirements.txt`, update the lock manually (the repo relies on `requirements.lock` for Docker installs and audits) and rerun `./.venv/bin/pip-audit --requirement requirements.lock` locally before pushing.

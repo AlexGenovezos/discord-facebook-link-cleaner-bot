@@ -6,6 +6,21 @@ from .config import Config
 from .formatter import format_clean_post
 from .metadata import fetch_title
 from .url_cleaner import clean_facebook_url, first_facebook_url
+from .version import VERSION, format_version_message
+
+
+VERSION_COMMANDS = frozenset(
+    {
+        "!version",
+        "bot version",
+        "version",
+    }
+)
+
+
+def _is_version_request(content: str) -> bool:
+    """Return True if the message explicitly asks for the bot version."""
+    return content.strip().lower() in VERSION_COMMANDS
 
 
 def create_client(config: Config, logger: logging.Logger) -> discord.Client:
@@ -22,6 +37,7 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
     @client.event
     async def on_ready() -> None:
         logger.info("Bot connected as %s (%s)", client.user, client.user.id if client.user else "unknown")
+        logger.info("Build version %s", VERSION)
         logger.info(
             "Watching channel_id=%s | delete_original=%s",
             config.target_channel_id,
@@ -49,15 +65,20 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
                 )
                 return
 
+            content = message.content or ""
             logger.debug(
                 "Received target-channel message id=%s author=%s content_len=%s",
                 message.id,
                 message.author.id,
-                len(message.content or ""),
+                len(content),
             )
 
+            if _is_version_request(content):
+                await message.channel.send(format_version_message())
+                return
+
             # Look for the first Facebook URL in the message.
-            found = first_facebook_url(message.content)
+            found = first_facebook_url(content)
             if not found:
                 logger.debug("No Facebook URL found in message id=%s", message.id)
                 return

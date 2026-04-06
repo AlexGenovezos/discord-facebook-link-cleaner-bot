@@ -25,6 +25,7 @@ Shared by @username
 - Resolves page title via OpenGraph metadata
 - Optionally deletes the original message
 - Ignores bots and webhooks
+- Replies to `!version` (or `version`/`bot version`) in the target channel with the current build version so you always know what release you're running.
 
 ---
 

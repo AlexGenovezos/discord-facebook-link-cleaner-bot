@@ -2,36 +2,25 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-import subprocess
+from datetime import date
+import os
 from typing import Final
 
 
 BASE_VERSION: Final[str] = "0.1.0"
+DATE_FORMAT: Final[str] = "%Y.%m.%d"
 
 
-def _git_commit_count() -> int | None:
-    """Return the git commit count for the repository root or None on error."""
-    try:
-        repo_root = Path(__file__).resolve().parents[1]
-        result = subprocess.run(
-            ["git", "rev-list", "--count", "HEAD"],
-            cwd=repo_root,
-            capture_output=True,
-            check=True,
-            text=True,
-        )
-        return int(result.stdout.strip())
-    except (subprocess.SubprocessError, ValueError):
-        return None
+def _build_date() -> str:
+    """Return the current build date string, preferring BUILD_DATE env."""
+    if build_date_env := os.getenv("BUILD_DATE"):
+        return build_date_env
+    return date.today().strftime(DATE_FORMAT)
 
 
 def _build_version() -> str:
-    """Return BASE_VERSION plus commit suffix when the repo is available."""
-    commit_count = _git_commit_count()
-    if commit_count is None:
-        return BASE_VERSION
-    return f"{BASE_VERSION}+{commit_count}"
+    """Return BASE_VERSION plus the build date so every build reports its date."""
+    return f"{BASE_VERSION}+{_build_date()}"
 
 
 VERSION: Final[str] = _build_version()

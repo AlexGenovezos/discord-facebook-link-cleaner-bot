@@ -1,6 +1,6 @@
 services:
-  bot:
-    build: .
+  discord-bot:
+    image: ghcr.io/alexgenovezos/discord-facebook-link-bot:latest
     env_file: .env
     restart: unless-stopped
     ports:

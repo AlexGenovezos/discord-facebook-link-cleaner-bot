@@ -10,4 +10,6 @@ COPY . .
 RUN useradd -r -s /bin/false botuser
 USER botuser
 
+EXPOSE 8080
+
 CMD ["python", "main.py"]

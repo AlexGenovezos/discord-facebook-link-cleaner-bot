@@ -14,6 +14,7 @@ class Config:
     request_timeout: float
     user_agent: str
     log_level: str
+    health_port: int
 
 
 def _positive_float(value: str | None, name: str) -> float:
@@ -59,4 +60,5 @@ def load_config() -> Config:
             "Mozilla/5.0 (compatible; DiscordLinkCleaner/1.0)",
         ),
         log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
+        health_port=int(os.getenv("HEALTH_PORT", "8080")),
     )

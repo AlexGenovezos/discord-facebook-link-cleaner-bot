@@ -58,6 +58,8 @@ services:
     image: ghcr.io/alexgenovezos/discord-facebook-link-bot:latest
     env_file: .env
     restart: unless-stopped
+    ports:
+      - "8080:8080"
 ```
 
 Create a `.env` file alongside it:
@@ -103,6 +105,28 @@ python main.py
 | `REQUEST_TIMEOUT` | No | `10` | Seconds to wait when fetching a page title |
 | `USER_AGENT` | No | `Mozilla/5.0 (compatible; DiscordLinkCleaner/1.0)` | HTTP User-Agent for title fetching |
 | `LOG_LEVEL` | No | `INFO` | Log verbosity: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `HEALTH_PORT` | No | `8080` | Port for the HTTP health check server |
+
+---
+
+## Health Check
+
+The bot exposes an HTTP health endpoint on port 8080 (configurable via `HEALTH_PORT`) that reports the Discord connection state and channel accessibility.
+
+**Endpoint:** `GET http://<host>:8080`
+
+| HTTP Status | Body | Meaning |
+|---|---|---|
+| `200` | `{"status":"ok","discord":true,"channel":true}` | Fully healthy |
+| `503` | `{"status":"degraded","discord":true,"channel":false}` | Connected to Discord but target channel is unreachable |
+| `503` | `{"status":"down","discord":false,"channel":false}` | Not connected to Discord |
+
+### Uptime Kuma
+
+- **Monitor type:** HTTP(s) - Json Query
+- **URL:** `http://<host>:8080`
+- **Json Query:** `$.status`
+- **Expected Value:** `ok`
 
 ## Dependency lockfile
 

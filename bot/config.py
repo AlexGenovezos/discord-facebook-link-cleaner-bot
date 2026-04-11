@@ -28,6 +28,17 @@ def _positive_float(value: str | None, name: str) -> float:
     return result
 
 
+def _positive_int(value: str | None, name: str) -> int:
+    """Parse a string as a positive integer, raising ValueError on bad input."""
+    try:
+        result = int(value or "")
+    except ValueError:
+        raise ValueError(f"{name} must be a positive integer")
+    if result <= 0:
+        raise ValueError(f"{name} must be a positive integer")
+    return result
+
+
 def _to_bool(value: str, default: bool = False) -> bool:
     """Parse common truthy strings ('true', '1', 'yes', 'on') to bool."""
     if value is None:
@@ -60,5 +71,5 @@ def load_config() -> Config:
             "Mozilla/5.0 (compatible; DiscordLinkCleaner/1.0)",
         ),
         log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
-        health_port=int(os.getenv("HEALTH_PORT", "8080")),
+        health_port=_positive_int(os.getenv("HEALTH_PORT", "8080"), "HEALTH_PORT"),
     )

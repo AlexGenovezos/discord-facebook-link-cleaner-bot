@@ -13,7 +13,7 @@ async def _run() -> None:
 
     async with client:
         async with asyncio.TaskGroup() as tg:
-            tg.create_task(client.start(config.discord_token, log_handler=None))
+            tg.create_task(client.start(config.discord_token))
             tg.create_task(run_health_server(config.health_port, logger))
 
 

@@ -3,7 +3,7 @@ from typing import Final
 import httpx
 from bs4 import BeautifulSoup
 
-from .url_cleaner import is_facebook_url
+from .url_cleaner import is_supported_url
 
 MAX_HTML_RESPONSE_BYTES: Final[int] = 1_000_000
 
@@ -26,7 +26,7 @@ async def fetch_title(url: str, timeout: float, user_agent: str) -> str | None:
                 response.raise_for_status()
 
                 final_url = str(response.url)
-                if not is_facebook_url(final_url):
+                if not is_supported_url(final_url):
                     return None
 
                 content_type = response.headers.get("content-type", "").lower()

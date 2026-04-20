@@ -5,7 +5,7 @@ import discord
 from .config import Config
 from .formatter import format_clean_post
 from .metadata import fetch_title
-from .url_cleaner import clean_facebook_url, first_facebook_url
+from .url_cleaner import clean_url, first_supported_url
 from .version import VERSION, format_version_message
 
 
@@ -25,7 +25,7 @@ async def _notify_processing_failure(
     error: Exception,
     logger: logging.Logger,
 ) -> None:
-    """Notify the channel that a Facebook link could not be cleaned."""
+    """Notify the channel that a link could not be cleaned."""
 
     mention = getattr(author, "mention", "the user")
     error_text = str(error) or error.__class__.__name__
@@ -34,7 +34,7 @@ async def _notify_processing_failure(
 
     try:
         await channel.send(
-            "⚠️ Unable to clean the Facebook link posted by "
+            "⚠️ Unable to clean the link posted by "
             f"{mention}. The issue was logged ({error_text})."
         )
     except Exception as send_error:
@@ -104,22 +104,22 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
                 await message.channel.send(format_version_message())
                 return
 
-            # Look for the first Facebook URL in the message.
-            found = first_facebook_url(content)
+            # Look for the first supported URL in the message.
+            found = first_supported_url(content)
             if not found:
-                logger.debug("No Facebook URL found in message id=%s", message.id)
+                logger.debug("No supported URL found in message id=%s", message.id)
                 return
 
             # Clean the URL and resolve a human-readable title for it.
-            cleaned = clean_facebook_url(found)
-            title = await fetch_title(cleaned, config.request_timeout, config.user_agent) or "Facebook Link"
+            cleaned = clean_url(found)
+            title = await fetch_title(cleaned, config.request_timeout, config.user_agent) or "Link"
             payload = format_clean_post(title, cleaned, message.author.mention)
 
             # suppress_embeds prevents Discord from generating a link preview,
             # since our formatted message already contains the title.
             await message.channel.send(payload, suppress_embeds=True)
 
-            logger.info("Processed Facebook link: %s -> %s", found, cleaned)
+            logger.info("Processed supported link: %s -> %s", found, cleaned)
 
             # Optionally remove the original message so the channel only shows
             # the cleaned repost. Requires Manage Messages permission.

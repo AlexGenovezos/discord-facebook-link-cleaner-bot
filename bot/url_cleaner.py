@@ -4,7 +4,20 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 # Matches http/https URLs, stopping at whitespace and common enclosing characters.
 URL_PATTERN = re.compile(r"https?://[^\s<>()\[\]{}\"']+")
 
-# All Facebook-owned domains we recognize as "Facebook URLs".
+# Domains we support for URL cleaning and title fetching.
+SUPPORTED_DOMAINS = {
+    "facebook.com",
+    "www.facebook.com",
+    "m.facebook.com",
+    "mbasic.facebook.com",
+    "business.facebook.com",
+    "fb.watch",
+    "www.fb.watch",
+    "carsandbids.com",
+    "www.carsandbids.com",
+}
+
+# Facebook-owned domains (subset of SUPPORTED_DOMAINS for tracking param stripping).
 FACEBOOK_DOMAINS = {
     "facebook.com",
     "www.facebook.com",
@@ -110,3 +123,41 @@ def first_facebook_url(text: str) -> str | None:
         if is_facebook_url(url):
             return url
     return None
+
+
+def is_supported_url(url: str) -> bool:
+    """Return True if the URL's host is in a supported domain."""
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    host = (parsed.netloc or "").lower()
+    # Strip a leading www. that isn't in our domain set so subdomain checks work.
+    if host.startswith("www.") and host not in SUPPORTED_DOMAINS:
+        host = host[4:]
+    return host in SUPPORTED_DOMAINS
+
+
+def first_supported_url(text: str) -> str | None:
+    """Return the first supported URL found in text, or None."""
+    for url in extract_urls(text):
+        if is_supported_url(url):
+            return url
+    return None
+
+
+def clean_url(url: str) -> str:
+    """Clean a supported URL.
+
+    For Facebook URLs, strips tracking parameters.
+    For other supported URLs, normalizes the scheme to https and removes fragments.
+    """
+    if is_facebook_url(url):
+        return clean_facebook_url(url)
+
+    parsed = urlparse(url)
+    cleaned = parsed._replace(
+        scheme="https",
+        fragment="",
+    )
+    return urlunparse(cleaned)

@@ -1,6 +1,6 @@
 import unittest
 
-from bot.url_cleaner import clean_facebook_url, first_facebook_url, is_facebook_url
+from bot.url_cleaner import clean_facebook_url, clean_url, first_facebook_url, first_supported_url, is_facebook_url, is_supported_url
 
 
 class UrlCleanerTests(unittest.TestCase):
@@ -45,6 +45,32 @@ class UrlCleanerTests(unittest.TestCase):
             "https://www.facebook.com/share/p/abc123/?ref=share&refsrc=deprecated&id=1"
         )
         self.assertEqual(cleaned, "https://www.facebook.com/share/p/abc123/?id=1")
+
+    def test_detects_carsandbids_url(self) -> None:
+        text = "check this out https://carsandbids.com/auctions/9emlXpv8/1989-bmw-325is-coupe"
+        self.assertEqual(
+            first_supported_url(text),
+            "https://carsandbids.com/auctions/9emlXpv8/1989-bmw-325is-coupe",
+        )
+
+    def test_is_supported_url_carsandbids(self) -> None:
+        self.assertTrue(is_supported_url("https://carsandbids.com/auctions/abc"))
+        self.assertTrue(is_supported_url("https://www.carsandbids.com/auctions/abc"))
+
+    def test_clean_url_carsandbids_passthrough(self) -> None:
+        url = "https://carsandbids.com/auctions/9emlXpv8/1989-bmw-325is-coupe"
+        cleaned = clean_url(url)
+        self.assertEqual(cleaned, url)
+
+    def test_clean_url_carsandbids_https_normalization(self) -> None:
+        url = "http://carsandbids.com/auctions/abc#fragment"
+        cleaned = clean_url(url)
+        self.assertEqual(cleaned, "https://carsandbids.com/auctions/abc")
+
+    def test_clean_url_facebook_uses_facebook_logic(self) -> None:
+        url = "https://www.facebook.com/marketplace/item/123/?fbclid=abc&id=1"
+        cleaned = clean_url(url)
+        self.assertEqual(cleaned, "https://www.facebook.com/marketplace/item/123/")
 
 
 if __name__ == "__main__":

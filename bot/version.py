@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 import os
+import subprocess
 from typing import Final
 
 
@@ -26,10 +27,20 @@ SEQUENCE_ENV_VARS: Final[tuple[str, ...]] = (
 
 
 def _build_date() -> str:
-    """Return the current build date string, preferring BUILD_DATE env."""
+    """Return the git commit date, preferring BUILD_DATE env."""
     if build_date_env := os.getenv("BUILD_DATE"):
         return build_date_env
-    return date.today().strftime(DATE_FORMAT)
+    try:
+        commit_timestamp = subprocess.check_output(
+            ["git", "log", "-1", "--format=%cI"],
+            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        commit_date = datetime.fromisoformat(commit_timestamp).date()
+        return commit_date.strftime(DATE_FORMAT)
+    except Exception:
+        return date.today().strftime(DATE_FORMAT)
 
 
 def _sequence_from_env() -> str | None:

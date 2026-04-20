@@ -1,6 +1,6 @@
-# Discord Facebook Link Cleaner
+# Discord Link Cleaner
 
-Do you and your friends sit on Discord sharing Facebook Marketplace links, only to look back a few days later and find a wall of unreadable URLs with zero context? This bot cleans them up automatically — stripping tracking garbage, resolving the page title, and reposting with the sender's name so your channel stays readable.
+Do you and your friends sit on Discord sharing links, only to look back a few days later and find a wall of unreadable URLs with zero context? This bot cleans them up automatically — stripping tracking garbage, resolving the page title, and reposting with the sender's name so your channel stays readable.
 
 **Before:**
 ```
@@ -9,23 +9,30 @@ https://www.facebook.com/marketplace/item/123456789/?fbclid=IwAR0abc&mibextid=xy
 
 **After:**
 ```
-Vintage Bike for Sale
+**Vintage Bike for Sale**
 https://www.facebook.com/marketplace/item/123456789/
 Shared by @username
 ```
 
 ---
 
+## Supported Sites
+
+| Site | Tracking param stripping | Notes |
+|---|---|---|
+| Facebook (`facebook.com`, `m.facebook.com`, `fb.watch`, etc.) | Yes — `fbclid`, `mibextid`, `rdid`, and others | Mobile URLs normalized to `www.facebook.com` |
+| Cars & Bids (`carsandbids.com`) | N/A | URL passed through as-is |
+
+---
+
 ## Features
 
 - Watches a single configured channel
-- Detects Facebook URLs (`facebook.com`, `m.facebook.com`, `fb.watch`, etc.)
-- Strips tracking params: `fbclid`, `mibextid`, `rdid`, and others
-- Normalizes mobile URLs (`m.facebook.com` → `www.facebook.com`)
+- Detects links from supported sites and reposts with a human-readable title
 - Resolves page title via OpenGraph metadata
 - Optionally deletes the original message
 - Ignores bots and webhooks
-- Replies to `!version` (or `version`/`bot version`) in the target channel with the build timestamp so you always know what release you're running; the version uses the build date (default `YYYY.MM.DD`, overridable with the `BUILD_DATE` env var) and appends a sequence (`BUILD_SEQUENCE`, CI run number, or a UTC timestamp) so you can tell build one, two, or 100 of the same calendar day.
+- Replies to `!version` (or `version`/`bot version`) in the target channel with the build version derived from the latest git commit date, overridable with the `BUILD_DATE` env var
 
 ---
 

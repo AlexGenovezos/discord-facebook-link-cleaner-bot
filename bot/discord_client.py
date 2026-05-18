@@ -5,7 +5,7 @@ import discord
 from .config import Config
 from .formatter import format_clean_post
 from .metadata import fetch_title
-from .url_cleaner import clean_url, first_supported_url
+from .url_cleaner import clean_url, first_supported_url, site_label
 from .version import VERSION, format_version_message
 
 
@@ -112,7 +112,7 @@ def create_client(config: Config, logger: logging.Logger) -> discord.Client:
 
             # Clean the URL and resolve a human-readable title for it.
             cleaned = clean_url(found)
-            title = await fetch_title(cleaned, config.request_timeout, config.user_agent) or "Link"
+            title = await fetch_title(cleaned, config.request_timeout, config.user_agent) or site_label(cleaned)
             payload = format_clean_post(title, cleaned, message.author.mention)
 
             # suppress_embeds prevents Discord from generating a link preview,

@@ -190,6 +190,29 @@ def is_supported_url(url: str) -> bool:
     return host in SUPPORTED_DOMAINS
 
 
+def site_label(url: str) -> str:
+    """Return a human-readable fallback label for a supported URL.
+
+    Used when the page title cannot be fetched (e.g. bot-detection blocks).
+    """
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return "Link"
+
+    host = (parsed.netloc or "").lower()
+    path = parsed.path or ""
+
+    if host in EBAY_DOMAINS:
+        # /itm/<item_id>
+        parts = [p for p in path.split("/") if p]
+        if len(parts) >= 2 and parts[0] == "itm":
+            return f"eBay Listing #{parts[1]}"
+        return "eBay Listing"
+
+    return "Link"
+
+
 def first_supported_url(text: str) -> str | None:
     """Return the first supported URL found in text, or None."""
     for url in extract_urls(text):

@@ -67,6 +67,9 @@ EBAY_JUNK_QUERY_PARAMS = {
     "norover",       # Internal flag
     "pub",           # Publisher/affiliate ID
     "ext",           # Extension data
+    "_skw",          # Search keyword used to find the item
+    "itmmeta",       # Item metadata token
+    "itmprp",        # Encoded item properties/tracking blob
 }
 
 

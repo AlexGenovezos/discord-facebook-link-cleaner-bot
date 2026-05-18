@@ -141,6 +141,7 @@ def clean_facebook_url(url: str) -> str:
     return urlunparse(cleaned)
 
 
+CYCLETRADER_DOMAINS = {"cycletrader.com", "www.cycletrader.com"}
 EBAY_DOMAINS = {"ebay.com", "www.ebay.com"}
 
 
@@ -202,6 +203,19 @@ def site_label(url: str) -> str:
 
     host = (parsed.netloc or "").lower()
     path = parsed.path or ""
+
+    if host in CYCLETRADER_DOMAINS:
+        # /listing/2014-Honda-INTERCEPTOR+VFR800-5039024568
+        # Humanize the slug: replace + and - with spaces, strip trailing numeric ID.
+        parts = [p for p in path.split("/") if p]
+        if len(parts) >= 2 and parts[0] == "listing":
+            slug = parts[1].replace("+", "-")
+            segments = slug.split("-")
+            # Drop the last segment if it's a pure numeric listing ID.
+            if segments and segments[-1].isdigit():
+                segments = segments[:-1]
+            return " ".join(s for s in segments if s)
+        return "CycleTrader Listing"
 
     if host in EBAY_DOMAINS:
         # /itm/<item_id>

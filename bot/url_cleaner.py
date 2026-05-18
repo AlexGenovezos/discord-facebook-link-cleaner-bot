@@ -15,6 +15,10 @@ SUPPORTED_DOMAINS = {
     "www.fb.watch",
     "carsandbids.com",
     "www.carsandbids.com",
+    "cycletrader.com",
+    "www.cycletrader.com",
+    "ebay.com",
+    "www.ebay.com",
 }
 
 # Facebook-owned domains (subset of SUPPORTED_DOMAINS for tracking param stripping).
@@ -46,6 +50,21 @@ JUNK_QUERY_PARAMS = {
     "notif_id",      # Notification identifier
     "notif_t",       # Notification type
     "locale",        # UI locale (not needed in a shared link)
+}
+
+EBAY_JUNK_QUERY_PARAMS = {
+    "mkevt",         # Marketing event
+    "mkcid",         # Marketing channel ID
+    "mkrid",         # Marketing rule ID
+    "campid",        # Affiliate campaign ID
+    "toolid",        # Affiliate tool ID
+    "customid",      # Affiliate custom ID
+    "hash",          # Internal eBay hash
+    "_trkparms",     # Tracking parameters blob
+    "epid",          # eBay partner ID
+    "norover",       # Internal flag
+    "pub",           # Publisher/affiliate ID
+    "ext",           # Extension data
 }
 
 
@@ -117,6 +136,34 @@ def clean_facebook_url(url: str) -> str:
     return urlunparse(cleaned)
 
 
+EBAY_DOMAINS = {"ebay.com", "www.ebay.com"}
+
+
+def is_ebay_url(url: str) -> bool:
+    """Return True if the URL's host is a known eBay domain."""
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    return (parsed.netloc or "").lower() in EBAY_DOMAINS
+
+
+def clean_ebay_url(url: str) -> str:
+    """Strip tracking parameters and normalise an eBay URL."""
+    parsed = urlparse(url)
+    kept_params = [
+        (key, value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+        if key.lower() not in EBAY_JUNK_QUERY_PARAMS
+    ]
+    cleaned = parsed._replace(
+        scheme="https",
+        query=urlencode(kept_params, doseq=True),
+        fragment="",
+    )
+    return urlunparse(cleaned)
+
+
 def first_facebook_url(text: str) -> str | None:
     """Return the first Facebook URL found in text, or None."""
     for url in extract_urls(text):
@@ -154,6 +201,8 @@ def clean_url(url: str) -> str:
     """
     if is_facebook_url(url):
         return clean_facebook_url(url)
+    if is_ebay_url(url):
+        return clean_ebay_url(url)
 
     parsed = urlparse(url)
     cleaned = parsed._replace(

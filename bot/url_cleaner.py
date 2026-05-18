@@ -19,6 +19,8 @@ SUPPORTED_DOMAINS = {
     "www.cycletrader.com",
     "ebay.com",
     "www.ebay.com",
+    "shopgoodwill.com",
+    "www.shopgoodwill.com",
 }
 
 # Facebook-owned domains (subset of SUPPORTED_DOMAINS for tracking param stripping).
